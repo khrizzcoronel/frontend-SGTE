@@ -1,0 +1,104 @@
+<main class="login-shell">
+    <div class="paper-bg" aria-hidden="true"></div>
+
+    <section class="login-wrapper" aria-label="Acceso al sistema">
+        <article class="login-card">
+            <header class="login-header">
+                <h1>Bienvenido</h1>
+                <p>Inicia sesión para continuar con tus trámites académicos.</p>
+            </header>
+
+            <form class="login-form" (ngSubmit)="iniciarSesion()">
+                <label for="usuario">Usuario</label>
+                <input id="usuario" type="text" name="usuario" placeholder="usuario@uteq.edu.ec"
+                    class="form-control form-control-lg" [(ngModel)]="nombreUsuario" autocomplete="username" required />
+
+                <label for="contrasena">Contraseña</label>
+                <input id="contrasena" type="password" name="contrasena" placeholder="Contraseña"
+                    class="form-control form-control-lg" [(ngModel)]="contrasena" autocomplete="current-password"
+                    required />
+
+                <button type="submit" class="btn btn-login" [disabled]="cargandoInicioSesion">
+                    @if (cargandoInicioSesion) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>Ingresando...
+                    } @else {
+                    Iniciar sesión
+                    }
+                </button>
+
+                <div class="divider" aria-hidden="true">
+                    <span></span>
+                    <small>o</small>
+                    <span></span>
+                </div>
+
+                <button type="button" class="btn btn-register" (click)="abrirModalCreateAccount()">
+                    Crear cuenta
+                </button>
+
+                <!-- <a href="#" class="forgot-link">¿Olvidaste tu contraseña?</a> -->
+            </form>
+        </article>
+
+        <aside class="login-note" aria-label="Información del sistema">
+            <div class="container-logo">
+                <img ngSrc="/assets/logo.png" width="679" height="143" alt="UTEQ" class="brand-logo" priority />
+                <p>
+                    El sistema mantiene una experiencia simple y enfocada para estudiantes, coordinación y decanato.
+                </p>
+            </div>
+        </aside>
+    </section>
+
+    <!-- Modal de creacion de cuenta -->
+    @if (showModalCreateAccount) {
+    <div class="modal modal--confirm-action" role="dialog" aria-modal="true" aria-labelledby="create-account-title">
+        <div class="modal__backdrop" (click)="cerrarModalCrearCuenta()"></div>
+        <div class="modal__workspace modal__workspace--confirm-action">
+            <div class="modal__dialog modal__dialog--confirm-action">
+                <div class="modal__header modal__header--primary">
+                    <div>
+                        <h3 id="create-account-title">
+                            <i class="bi bi-person-plus-fill" style="color: #0f6a1d;"></i>
+                            Crear cuenta
+                        </h3>
+                        <p>Complete sus datos para registrarse en el sistema.</p>
+                    </div>
+                    <button type="button" class="header-action-btn header-action-btn--icon header-action-btn--soft" (click)="cerrarModalCrearCuenta()" aria-label="Cerrar modal">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div class="modal__body modal__body--confirm-action">
+                    <form>
+                        <div class="confirm-action__field mt-2">
+                            <label class="confirm-action__label">Cédula</label>
+                            <input type="text" name="cedula" placeholder="Ingrese su cédula"
+                                class="confirm-action__input" [(ngModel)]="cedula" required />
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal__footer modal__footer--confirm-action">
+                    <button type="button" class="header-action-btn header-action-btn--soft" (click)="cerrarModalCrearCuenta()" [disabled]="cargandoRegistro">
+                        <i class="bi bi-x-circle"></i>
+                        <span>Cancelar</span>
+                    </button>
+                    <button type="button" class="header-action-btn header-action-btn--primary"
+                            [disabled]="cargandoRegistro || !cedula"
+                            (click)="registrarCuenta()">
+                        @if (cargandoRegistro) {
+                            <span class="spinner-border spinner-border-sm"></span>
+                            <span>Registrando...</span>
+                        } @else {
+                            <i class="bi bi-check2-circle"></i>
+                            <span>Registrar</span>
+                        }
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+</main>

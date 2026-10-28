@@ -1,0 +1,282 @@
+<header class="page-header">
+  <h2>Seguimiento de Trámites</h2>
+  <p>Revisa el estado de tus solicitudes activas, adjunta documentos faltantes o descarga resoluciones.</p>
+</header>
+<div class="dashboard-container">
+
+  <!-- KPI ROW -->
+  <section class="kpi-row">
+    <div class="kpi-card kpi-warning">
+      <div class="kpi-content">
+        <span class="kpi-label">Pendientes</span>
+        <span class="kpi-value">{{ stats.pendientes }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-clock"></i></div>
+    </div>
+
+    <div class="kpi-card kpi-primary">
+      <div class="kpi-content">
+        <span class="kpi-label">En Proceso</span>
+        <span class="kpi-value">{{ stats.enProceso }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-arrow-repeat"></i></div>
+    </div>
+
+    <div class="kpi-card kpi-success">
+      <div class="kpi-content">
+        <span class="kpi-label">Finalizadas</span>
+        <span class="kpi-value">{{ stats.finalizadas }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-check-circle"></i></div>
+    </div>
+
+    <div class="kpi-card kpi-danger">
+      <div class="kpi-content">
+        <span class="kpi-label">Observadas</span>
+        <span class="kpi-value">{{ stats.observadas }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-x-circle"></i></div>
+    </div>
+  </section>
+
+  <!-- TOP SECTION: Solicitudes Grid -->
+  <section class="top-section">
+    <!-- FILTER ROW -->
+    <section class="view-toolbar">
+      <div class="filter-label">
+        <i class="bi bi-funnel"></i> Filtrar:
+      </div>
+
+      <div class="filter-pills">
+        <button class="filter-pill" [class.active]="!filtroEstado" (click)="filtrarPorEstado('')">
+          <i class="bi bi-grid-fill"></i> Todas <span class="badge-count">{{ stats.total }}</span>
+        </button>
+        <button class="filter-pill" [class.active]="filtroEstado === 'pendiente'" (click)="filtrarPorEstado('pendiente')">
+          <i class="bi bi-clock"></i> Pendientes
+        </button>
+        <button class="filter-pill" [class.active]="filtroEstado === 'en_proceso'" (click)="filtrarPorEstado('en_proceso')">
+          <i class="bi bi-arrow-repeat"></i> En Proceso
+        </button>
+        <button class="filter-pill" [class.active]="filtroEstado === 'finalizado'" (click)="filtrarPorEstado('finalizado')">
+          <i class="bi bi-check-circle"></i> Finalizadas
+        </button>
+      </div>
+
+      <input class="search-input ms-auto" [(ngModel)]="buscar" placeholder="Buscar (#código, plantilla, categoría)..." style="flex: 1; max-width: 350px;" />
+
+      <!-- PAGINATOR -->
+      <div class="d-flex align-items-center gap-2 ms-2 ps-3" style="border-left: 1px solid #e9ecef;">
+        <span style="font-size: 0.85rem; color: #6c757d; font-weight: 600;">
+          Pág. {{ paginaActual }} de {{ maxPagina }}
+        </span>
+        <div class="btn-group">
+          <button class="btn btn-outline-secondary btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1">&laquo;</button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaActual >= maxPagina">&raquo;</button>
+        </div>
+      </div>
+    </section>
+
+    @if (error) {
+      <div class="status warn" role="alert" style="margin-bottom: 20px;">
+        <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+        <button class="btn-ghost btn-small" type="button" (click)="cargarSolicitudes()">Reintentar</button>
+      </div>
+    }
+
+    @if (cargando) {
+      <app-loading message="Cargando tus solicitudes..."></app-loading>
+    }
+
+    @if (!cargando && !error && solicitudesFiltradas.length === 0) {
+      <div class="empty-state">
+        <i class="bi bi-folder2-open" style="font-size: 2.5rem; color: #ced4da;"></i>
+        <p style="margin-top: 10px; color: #6c757d;">No tienes solicitudes registradas.</p>
+      </div>
+    }
+
+    <div class="cards-grid">
+      @for (sol of solicitudesPaginadas; track sol.idSolicitud) {
+        <div class="info-card pointer" [class.selected]="solicitudSeleccionada?.idSolicitud === sol.idSolicitud" (click)="seleccionarSolicitud(sol)">
+          <!-- Top Row -->
+          <div class="card-header-row">
+            <span class="card-badge"><i class="bi bi-bookmark-fill"></i> {{ sol.categoria || 'Sin categoría' }}</span>
+            <span class="card-date"><i class="bi bi-calendar3"></i> {{ formatearFecha(sol.fechaCreacion) }}</span>
+          </div>
+
+          <!-- Main Info -->
+          <div class="card-main">
+            <h4 class="card-title">{{ sol.nombrePlantilla }}</h4>
+            <span class="card-subtitle"><i class="bi bi-hash"></i> {{ sol.codigoSolicitud }}</span>
+            <span class="card-comment"><i class="bi bi-flag"></i> Prioridad: {{ sol.prioridad }}</span>
+          </div>
+
+          <!-- Status -->
+          <div class="card-status-row">
+            <span class="status-badge" [ngClass]="obtenerClaseEstado(sol.estadoActual)">
+              {{ obtenerEtiquetaEstado(sol.estadoActual) }}
+            </span>
+            <span class="participants">
+              <i class="bi bi-signpost-split"></i>
+              @if (sol.totalEtapas > 0) {
+                Etapa {{ sol.etapaActual }}/{{ sol.totalEtapas }}
+              } @else {
+                Sin flujo
+              }
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- BOTTOM SECTION: Detail Panel -->
+  <section class="bottom-section">
+    <div class="dash-panel detail-panel" [class.no-sel]="!solicitudSeleccionada">
+      @if (!solicitudSeleccionada && !cargandoDetalle) {
+        <div class="empty-detail">
+          <i class="bi bi-hand-index-thumb"></i>
+          <h4>Selecciona una solicitud</h4>
+          <p>Haz clic en cualquiera de tus solicitudes para ver su trazabilidad, documentos y detalles completos.</p>
+        </div>
+      }
+
+      @if (cargandoDetalle) {
+        <div class="empty-detail">
+          <app-loading message="Cargando detalle..."></app-loading>
+        </div>
+      }
+
+      @if (solicitudSeleccionada && !cargandoDetalle) {
+        <div class="detail-header">
+          <div class="detail-h-left">
+            <h3 class="panel-title">{{ solicitudSeleccionada.nombrePlantilla }}</h3>
+            <span class="detail-id"><i class="bi bi-hash"></i> {{ solicitudSeleccionada.codigoSolicitud }}</span>
+          </div>
+          <div class="detail-h-right">
+            <span class="status-badge" [ngClass]="obtenerClaseEstado(solicitudSeleccionada.estadoActual)">
+              {{ obtenerEtiquetaEstado(solicitudSeleccionada.estadoActual) }}
+            </span>
+            @if (solicitudSeleccionada.totalEtapas > 0) {
+              <span class="etapa-badge">Etapa {{ solicitudSeleccionada.etapaActual }} / {{ solicitudSeleccionada.totalEtapas }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <!-- Columna izquierda: Datos + Archivos -->
+          <div class="info-column">
+            <h4 class="seg-h4"><i class="bi bi-journal-text"></i> Datos Generales</h4>
+            <div class="data-grid">
+              <div class="data-item">
+                <small>Categoría</small>
+                <strong>{{ solicitudSeleccionada.categoria || '—' }}</strong>
+              </div>
+              <div class="data-item">
+                <small>Prioridad</small>
+                <strong>{{ solicitudSeleccionada.prioridad }}</strong>
+              </div>
+              <div class="data-item">
+                <small>Carrera</small>
+                <strong>{{ solicitudSeleccionada.carrera || '—' }}</strong>
+              </div>
+              <div class="data-item">
+                <small>Estado Actual</small>
+                <strong>{{ obtenerEtiquetaEstado(solicitudSeleccionada.estadoActual) }}</strong>
+              </div>
+              <div class="data-item">
+                <small>Fecha de Creación</small>
+                <strong>{{ formatearFechaHora(solicitudSeleccionada.fechaCreacion) }}</strong>
+              </div>
+              <div class="data-item">
+                <small>Fecha Estimada Fin</small>
+                <strong>{{ formatearFecha(solicitudSeleccionada.fechaEstimadaFin) }}</strong>
+              </div>
+            </div>
+
+            @if (solicitudSeleccionada.detallesSolicitud) {
+              <h4 class="seg-h4 mt-4"><i class="bi bi-chat-left-text"></i> Observaciones</h4>
+              <div class="observaciones-box">{{ solicitudSeleccionada.detallesSolicitud }}</div>
+            }
+
+            @if (solicitudSeleccionada.resolucion) {
+              <h4 class="seg-h4 mt-4"><i class="bi bi-patch-check"></i> Resolución</h4>
+              <div class="resolucion-box">{{ solicitudSeleccionada.resolucion }}</div>
+            }
+
+            <h4 class="seg-h4 mt-4"><i class="bi bi-folder2-open"></i> Documentos Adjuntos ({{ solicitudSeleccionada.documentos.length }})</h4>
+            @if (solicitudSeleccionada.documentos.length === 0) {
+              <p class="text-muted" style="font-size: 0.85rem;">No hay documentos adjuntos.</p>
+            }
+            <div class="files-list">
+              @for (doc of solicitudSeleccionada.documentos; track doc.idDocumento) {
+                <div class="file-item" (click)="descargarArchivo(doc)">
+                  <i class="bi" [ngClass]="obtenerIconoArchivo(doc.tipoMime)" [style.color]="obtenerColorIcono(doc.tipoMime)" style="font-size: 1.5rem;"></i>
+                  <div class="file-info">
+                    <div class="file-name">{{ doc.nombreOriginal }}</div>
+                    <div class="file-size">
+                      {{ formatearTamano(doc.tamanoBytes) }}
+                      @if (doc.nombreRequisito) {
+                        · {{ doc.nombreRequisito }}
+                      }
+                    </div>
+                  </div>
+                  <i class="bi bi-download ms-auto" style="color: #6c757d;"></i>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Columna derecha: Trazabilidad -->
+          <div class="timeline-column">
+            <h4 class="seg-h4"><i class="bi bi-signpost-split"></i> Trazabilidad del trámite</h4>
+
+            @if (solicitudSeleccionada.historial.length === 0) {
+              <div class="tl-empty">
+                <i class="bi bi-clock-history"></i>
+                <p>Aún no hay registros de trazabilidad para esta solicitud.</p>
+              </div>
+            }
+
+            <ol class="timeline timeline--v">
+              @for (paso of solicitudSeleccionada.historial; track paso.idHistorial; let i = $index) {
+                <li class="tl-item" [ngClass]="obtenerEstadoTimeline(paso, i, solicitudSeleccionada.historial)">
+                  <div class="tl-dot">
+                    <i class="bi"
+                      [class.bi-check-circle-fill]="obtenerEstadoTimeline(paso, i, solicitudSeleccionada.historial) === 'done'"
+                      [class.bi-play-circle-fill]="obtenerEstadoTimeline(paso, i, solicitudSeleccionada.historial) === 'current'"
+                      [class.bi-clock-fill]="obtenerEstadoTimeline(paso, i, solicitudSeleccionada.historial) === 'pending'">
+                    </i>
+                  </div>
+                  <div class="tl-body">
+                    <div class="tl-title">{{ paso.nombreEtapa || 'Etapa ' + (i + 1) }}</div>
+                    <div class="tl-meta">
+                      {{ formatearFechaHora(paso.fechaEntrada) }}
+                      @if (obtenerEstadoTimeline(paso, i, solicitudSeleccionada.historial) === 'current') {
+                        <span class="badge-current">En proceso</span>
+                      }
+                      @if (paso.slaExcedido) {
+                        <span class="badge-sla">SLA excedido</span>
+                      }
+                    </div>
+                    @if (paso.procesadoPor) {
+                      <div class="tl-responsable"><i class="bi bi-person-fill"></i> {{ paso.procesadoPor }}</div>
+                    }
+                    @if (paso.comentarios) {
+                      <div class="tl-desc">{{ paso.comentarios }}</div>
+                    }
+                    @if (paso.fechaCompletado) {
+                      <div class="tl-completado">
+                        <i class="bi bi-check2"></i> Completado: {{ formatearFechaHora(paso.fechaCompletado) }}
+                      </div>
+                    }
+                  </div>
+                </li>
+              }
+            </ol>
+          </div>
+        </div>
+      }
+    </div>
+  </section>
+
+</div>

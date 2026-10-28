@@ -1,0 +1,7 @@
+@import '../../../shared/styles/layout-base.css';
+
+:host {
+    /* Student specific overrides if any, otherwise inherit from layout-base */
+    /* Only override colors if we want a different brand color for students */
+}
+

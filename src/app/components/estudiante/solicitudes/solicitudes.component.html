@@ -1,0 +1,272 @@
+<header class="page-header">
+  <h2>Trámites y Solicitudes</h2>
+  <p>Inicia un nuevo trámite seleccionando la categoría correspondiente y llena los requisitos.</p>
+</header>
+<div class="dashboard-container">
+
+  <!-- KPI ROW -->
+  <section class="kpi-row">
+    <div class="kpi-card kpi-warning">
+      <div class="kpi-content">
+        <span class="kpi-label">En Revisión</span>
+        <span class="kpi-value">0</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-clock"></i></div>
+    </div>
+
+    <div class="kpi-card kpi-success">
+      <div class="kpi-content">
+        <span class="kpi-label">Finalizadas</span>
+        <span class="kpi-value">0</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-check-circle"></i></div>
+    </div>
+
+    <div class="kpi-card kpi-danger">
+      <div class="kpi-content">
+        <span class="kpi-label">Observadas</span>
+        <span class="kpi-value">0</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-x-circle"></i></div>
+    </div>
+
+    <div class="kpi-card kpi-primary">
+      <div class="kpi-content">
+        <span class="kpi-label">Trámites Disponibles</span>
+        <span class="kpi-value">{{ totalDisponibles }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-file-earmark-text"></i></div>
+    </div>
+  </section>
+
+  <!-- FILTER ROW -->
+  <section class="view-toolbar">
+    <div class="filter-label">
+      <i class="bi bi-funnel"></i> Filtrar por estado:
+    </div>
+
+    <div class="filter-pills">
+      <button class="filter-pill active">
+        <i class="bi bi-grid-fill"></i> Todas <span class="badge-count">{{ totalDisponibles }}</span>
+      </button>
+      <button class="filter-pill">
+        <i class="bi bi-check-circle"></i> Activa
+      </button>
+      <button class="filter-pill">
+        <i class="bi bi-x-circle"></i> Inactiva
+      </button>
+    </div>
+
+    <input class="search-input ms-auto" [(ngModel)]="buscar" placeholder="Buscar categoría, nombr..." />
+
+    <select class="search-input mx-2" [(ngModel)]="filtrCategoria">
+      <option value="">Todas las categorías</option>
+      @for (cat of categorias; track cat) {
+        <option [value]="cat">{{ cat }}</option>
+      }
+    </select>
+
+
+
+    <!-- PAGINATOR -->
+    <div class="d-flex align-items-center gap-2 ms-3">
+      <span style="font-size: 0.85rem; color: #6c757d; font-weight: 600;">
+        Pág. {{paginaActual}} de {{maxPagina}}
+      </span>
+      <div class="btn-group">
+          <button class="btn btn-outline-secondary btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginaActual === 1">&laquo;</button>
+          <button class="btn btn-outline-secondary btn-sm" (click)="cambiarPagina(1)" [disabled]="paginaActual >= maxPagina">&raquo;</button>
+      </div>
+    </div>
+  </section>
+
+  @if (error) {
+    <div class="status warn" role="alert" style="margin-bottom: 20px;">
+      <i class="bi bi-exclamation-triangle-fill"></i> {{ error }}
+      <button class="btn-ghost btn-small" type="button" (click)="cargarPlantillasDisponibles()">Reintentar</button>
+    </div>
+  }
+
+  @if (cargando) {
+    <app-loading message="Cargando trámites disponibles..."></app-loading>
+  }
+
+  <!-- CARDS GRID -->
+  @if (!cargando && !error) {
+
+    @if (plantillasFiltradas.length === 0) {
+      <div class="empty-state" style="text-align:center; padding: 40px; background: #fff; border-radius: 12px; border: 1px solid #e9ecef;">
+        <i class="bi bi-folder2-open" style="font-size: 3rem; color: #ced4da;"></i>
+        <p style="margin-top: 10px; color: #6c757d;">No hay trámites disponibles.</p>
+      </div>
+    }
+
+    <div class="cards-grid">
+      @for (p of plantillasPaginadas; track p.idPlantilla) {
+        <div class="info-card" (click)="abrirDetalle(p)">
+          <!-- Top Row -->
+          <div class="card-header-row">
+            <span class="card-badge"><i class="bi bi-person-fill"></i> {{ p.categoria }}</span>
+            <span class="card-date"><i class="bi bi-calendar3"></i> {{ p.diasResolucionEstimados }} d est.</span>
+          </div>
+
+          <!-- Main Info -->
+          <div class="card-main">
+            <h4 class="card-title"><i class="bi bi-file-earmark-text-fill"></i> {{ p.nombrePlantilla }}</h4>
+            <span class="card-subtitle"><i class="bi bi-book"></i> {{ p.carrera }}</span>
+            <span class="card-comment"><i class="bi bi-chat-left-text"></i> {{ p.descripcionPlantilla || p.nombreFlujo }}</span>
+          </div>
+
+          <!-- Status & Participants -->
+          <div class="card-status-row">
+            <span class="status-badge success">Activa</span>
+            <span class="participants"><i class="bi bi-people-fill"></i> {{ p.requisitosTramite.length }} pasos</span>
+          </div>
+
+          <!-- Footer -->
+          <div class="card-footer">
+            <span class="ref-id"># Ref. #{{ p.idPlantilla }}</span>
+            <div class="card-actions">
+              <button type="button" class="action-btn" title="Ver detalle" (click)="$event.stopPropagation(); abrirDetalle(p)"><i class="bi bi-eye"></i></button>
+              <button class="action-btn warning" title="Requisitos"><i class="bi bi-folder2-open"></i></button>
+              <button class="action-btn danger" title="Descartar"><i class="bi bi-slash-circle"></i></button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Modal: Detalle de plantilla -->
+@if (modalAbierto && plantillaSeleccionada) {
+  <div class="detail-modal" role="dialog" aria-modal="true" aria-labelledby="solicitud-detalle-title">
+    <div class="detail-modal__backdrop" (click)="cerrarModal()"></div>
+    <div class="detail-modal__dialog">
+      <div class="detail-modal__hero">
+        <div>
+          <div class="detail-modal__eyebrow">Detalle de plantilla</div>
+          <h3 id="solicitud-detalle-title">{{ plantillaSeleccionada.nombrePlantilla }}</h3>
+          <p>{{ plantillaSeleccionada.descripcionPlantilla || plantillaSeleccionada.nombreFlujo }}</p>
+        </div>
+        <div class="detail-modal__hero-actions">
+          <span class="detail-modal__status is-active">Plantilla Activa</span>
+          <button type="button" class="header-action-btn header-action-btn--icon header-action-btn--soft" (click)="cerrarModal()" aria-label="Cerrar detalle">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="detail-modal__content">
+        <section class="detail-summary-grid">
+          <article class="detail-summary-card">
+            <span>Categoria</span>
+            <strong>{{ plantillaSeleccionada.categoria }}</strong>
+          </article>
+          <article class="detail-summary-card">
+            <span>Carrera</span>
+            <strong>{{ plantillaSeleccionada.carrera }}</strong>
+          </article>
+          <article class="detail-summary-card">
+            <span>Flujo</span>
+            <strong>{{ plantillaSeleccionada.nombreFlujo }}</strong>
+          </article>
+          <article class="detail-summary-card">
+            <span>Tiempo estimado</span>
+            <strong>{{ plantillaSeleccionada.diasResolucionEstimados }} días</strong>
+          </article>
+        </section>
+
+        <div class="detail-modal__footer detail-modal__footer--top">
+          <button type="button" class="header-action-btn" (click)="enviarSolicitud()" [disabled]="enviandoSolicitud">
+            <i class="bi bi-send-check"></i>
+            <span>{{ enviandoSolicitud ? 'Enviando...' : 'Enviar solicitud' }}</span>
+          </button>
+        </div>
+
+        <section class="detail-sections-grid">
+          <div class="detail-block">
+            <h4><i class="bi bi-diagram-3"></i> Flujo de trabajo</h4>
+            <ol class="flow-timeline">
+              @for (paso of plantillaSeleccionada.pasosTramite; track paso.idPaso; let isLast = $last) {
+              <li class="flow-step">
+                <div class="flow-step__rail">
+                  <span class="flow-step__index">{{ paso.ordenPaso }}</span>
+                  @if (!isLast) {
+                  <span class="flow-step__line"></span>
+                  }
+                </div>
+                <div class="flow-step__card">
+                  <div class="flow-step__top">
+                    <div>
+                      <div class="flow-step__title">{{ paso.nombreEtapa }}</div>
+                      <div class="flow-step__code">{{ paso.codigoEtapa }}</div>
+                    </div>
+                    <span class="flow-step__sla">{{ paso.horasSla }}h SLA</span>
+                  </div>
+                  <p class="flow-step__desc">{{ paso.descripcionEtapa || 'sin descripcion' }}</p>
+                  <div class="flow-step__meta">
+                    <span class="flow-chip" [class.is-muted]="!paso.rolRequerido">
+                      <i class="bi bi-person-badge"></i>
+                      {{ paso.rolRequerido || 'Sin rol asignado' }}
+                    </span>
+                    <span class="flow-chip" [class.is-muted]="!paso.usuarioEncargado">
+                      <i class="bi bi-person-check"></i>
+                      {{ paso.usuarioEncargado || 'Responsable pendiente' }}
+                    </span>
+                  </div>
+                </div>
+              </li>
+              }
+              @empty {
+              <li class="flow-empty">Esta plantilla aún no tiene pasos de flujo configurados.</li>
+              }
+            </ol>
+          </div>
+
+          <div class="detail-block">
+            <h4><i class="bi bi-list-check"></i> Requisitos</h4>
+            <div class="requirements-list">
+              @if (plantillaSeleccionada.requisitosTramite.length > 0) {
+              @for (req of plantillaSeleccionada.requisitosTramite; track req.idRequisito) {
+              <article class="requirement-item">
+                <div class="requirement-item__icon">
+                  <i class="bi bi-file-earmark-check-fill"></i>
+                </div>
+                <div class="requirement-item__body">
+                  <strong>{{ req.nombreRequisito }}</strong>
+                  <span>{{ req.tipoDocumento }} · Máx. {{ req.tamanoMaxMb }} MB</span>
+                  <small>{{ req.descripcionRequisito }}</small>
+                </div>
+                <label class="requirement-item__upload"
+                  [class.is-uploaded]="!!documentosRequisito[req.idRequisito]"
+                  [attr.title]="documentosRequisitoNombres[req.idRequisito] || 'Subir documento'"
+                  aria-label="Subir documento">
+                  <input type="file"
+                    class="requirement-item__file-input"
+                    [accept]="obtenerAceptacionRequisito(req.extensionesPermitidas)"
+                    (change)="manejarDocumentoRequisito(req, $event)" />
+                  @if (documentosRequisito[req.idRequisito]) {
+                  <i class="bi bi-check2"></i>
+                  } @else {
+                  <i class="bi bi-upload"></i>
+                  }
+                </label>
+                <span class="requirement-item__flag" [class.is-obligatory]="req.esObligatorio">
+                  {{ req.esObligatorio ? 'Obligatorio' : 'Opcional' }}
+                </span>
+              </article>
+              }
+              } @else {
+              <p class="flow-empty">No hay requisitos configurados para esta plantilla.</p>
+              }
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+}
+

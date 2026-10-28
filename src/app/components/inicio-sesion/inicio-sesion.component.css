@@ -1,0 +1,465 @@
+:host {
+    display: block;
+}
+
+.login-shell {
+    --notion-primary: #0f6a1d;
+    --notion-primary-hover: #0b5015;
+    --type-title: clamp(1.875rem, 3vw, 2.5rem);
+    --type-body: 1rem;
+    --type-label: 0.9375rem;
+    --type-meta: 0.875rem;
+    position: relative;
+    min-height: 100dvh;
+    background: #ffffff;
+    overflow: hidden;
+    font-family: 'Manrope', 'Segoe UI Variable', sans-serif;
+    font-size: var(--type-body);
+    line-height: 1.45;
+}
+
+.paper-bg {
+    display: none; /* Removed for a cleaner split screen */
+}
+
+.login-wrapper {
+    position: relative;
+    z-index: 1;
+    min-height: 100dvh;
+    width: 100%;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1.1fr; /* Left form, Right brand */
+    align-items: stretch;
+}
+
+.login-card {
+    background: #ffffff;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: clamp(2rem, 5vw, 4rem);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 440px; /* Reduced for better proportion */
+    margin: 0 auto;
+    width: 100%;
+}
+
+.login-header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.login-header h1 {
+    font-size: var(--type-title);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin: 0;
+    color: #1a1a1a;
+}
+
+.login-header p {
+    color: #686860;
+    margin: 0.75rem 0 0;
+    font-size: 1.05rem;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.login-form label {
+    font-size: var(--type-label);
+    color: #31312c;
+    font-weight: 700;
+    margin-top: 0.25rem;
+}
+
+.login-form .form-control {
+    border-radius: 12px;
+    border: 1px solid #d4d4d0;
+    background: #ffffff;
+    color: #2b2b27;
+    min-height: 3.2rem;
+    padding: 0.85rem 1rem;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    transition: all 0.2s ease;
+}
+
+.login-form .form-control::placeholder {
+    color: #a3a39e;
+}
+
+.login-form .form-control:focus {
+    background: #ffffff;
+    border-color: var(--notion-primary);
+    box-shadow: 0 0 0 0.25rem rgba(15, 106, 29, 0.15);
+    color: #2b2b27;
+    outline: none;
+}
+
+/* Fix browser autocomplete blue/yellow background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 50px white inset !important;
+    -webkit-text-fill-color: #2b2b27 !important;
+}
+
+.login-form .btn {
+    border-radius: 12px;
+    min-height: 3.2rem;
+    font-weight: 700;
+    margin-top: 0.5rem;
+    transition: background-color 150ms ease, transform 120ms ease, box-shadow 150ms ease;
+    font-size: 1.05rem;
+}
+
+.login-form .btn:active {
+    transform: translateY(1px);
+}
+
+.btn-login {
+    color: #ffffff;
+    border: none;
+    background: var(--notion-primary);
+    box-shadow: 0 4px 12px rgba(15, 106, 29, 0.25);
+}
+
+.btn-login:hover,
+.btn-login:focus-visible {
+    background: var(--notion-primary-hover);
+    color: #ffffff;
+    box-shadow: 0 6px 16px rgba(15, 106, 29, 0.35);
+}
+
+.btn-login:disabled {
+    background: #8ec19a;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-register {
+    color: #31312c;
+    border: 1px solid #d4d4d0;
+    background: #ffffff;
+}
+
+.btn-register:hover,
+.btn-register:focus-visible {
+    color: #1d1d1a;
+    border-color: #b5b5af;
+    background: #fdfdfc;
+}
+
+.divider {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.divider span {
+    display: block;
+    height: 1px;
+    background: #e8e8e4;
+}
+
+.divider small {
+    color: #9b9b91;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.forgot-link {
+    color: #717169;
+    text-decoration: none;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    width: fit-content;
+    font-weight: 600;
+    transition: color 0.2s;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.forgot-link:hover {
+    color: var(--notion-primary);
+    text-decoration: underline;
+}
+
+/* Right Side: Brand Panel */
+.login-note {
+    background: var(--notion-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: clamp(2rem, 5vw, 4rem);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Optional background pattern for the brand side */
+.login-note::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 40%);
+    pointer-events: none;
+}
+
+.container-logo {
+    position: relative;
+    z-index: 2;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.brand-logo {
+    width: 540px;
+    max-width: 90%;
+    height: auto;
+    filter: brightness(0) invert(1); /* Turns the colored logo into pure white */
+    display: block;
+    margin: 0;
+}
+
+.login-note p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    font-size: 1.05rem;
+    max-width: 480px;
+    margin: 0;
+    font-weight: 400;
+}
+
+.form-check-input {
+    width: 3rem;
+    height: 1.5rem;
+    margin-top: 0;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.form-check-label {
+    font-size: 1.15rem;
+    padding-top: 6px;
+    cursor: pointer;
+}
+
+@media (max-width: 1060px) {
+    .login-wrapper {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+
+    .login-note {
+        padding: 3rem 2rem;
+        background: var(--notion-primary);
+        order: -1; /* Puts the logo on top in mobile */
+    }
+
+    .brand-logo {
+        width: 260px;
+        margin-bottom: 1rem;
+    }
+
+    .login-note p {
+        font-size: 1.05rem;
+        max-width: 100%;
+    }
+
+    .login-card {
+        padding: 3rem 2rem;
+        max-width: 500px;
+    }
+}
+
+/* =========================================================
+   BOTONES DE ACCIÓN COMPARTIDOS
+   ========================================================= */
+.header-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #0f6a1d;
+  border-radius: 12px;
+  background: #fff;
+  color: #0f6a1d;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(15, 106, 29, 0.08);
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.header-action-btn:hover:not(:disabled) {
+  background: #f3fbf5;
+  box-shadow: 0 6px 16px rgba(15, 106, 29, 0.12);
+  transform: translateY(-1px);
+}
+
+.header-action-btn i {
+  font-size: 1rem;
+}
+
+.header-action-btn--soft {
+  background: #f8f9fa;
+  border-color: #e9ecef;
+  color: #495057;
+}
+
+.header-action-btn--soft:hover:not(:disabled) {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.header-action-btn--icon {
+  padding: 10px 12px;
+  min-width: 44px;
+  justify-content: center;
+}
+
+.header-action-btn--primary {
+  background: linear-gradient(135deg, #0f6a1d 0%, #0b5015 100%) !important;
+  border-color: #093f10 !important;
+  color: #fff !important;
+}
+
+.header-action-btn--primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0b5015 0%, #093f10 100%) !important;
+  box-shadow: 0 6px 16px rgba(15, 106, 29, 0.3) !important;
+}
+
+.header-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =========================================================
+   MODAL: CREAR CUENTA
+   ========================================================= */
+.modal--confirm-action {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.modal--confirm-action .modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(4px);
+}
+
+.modal__workspace--confirm-action {
+  position: relative;
+  z-index: 1;
+  width: min(620px, 92vw);
+  display: flex;
+  justify-content: center;
+}
+
+.modal__dialog--confirm-action {
+  width: 100%;
+  max-width: 620px;
+  overflow: hidden;
+  border-radius: 24px;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.14);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header variant */
+.modal__dialog--confirm-action .modal__header {
+  padding: 18px 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.modal__dialog--confirm-action .modal__header--primary {
+  border-bottom: 1px solid #d1fae5;
+  background: linear-gradient(180deg, #ecfdf5 0%, #ffffff 100%);
+}
+
+.modal__dialog--confirm-action .modal__header h3 {
+  margin: 0 0 6px;
+  font-size: 1.18rem;
+  line-height: 1.2;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.modal__header--primary h3 { color: #065f46; }
+.modal__header--primary p { color: #047857; margin: 0; line-height: 1.45; font-size: 0.92rem; }
+
+/* Body */
+.modal__body--confirm-action {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.confirm-action__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirm-action__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.02em;
+}
+
+.confirm-action__input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  color: #111827;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.confirm-action__input:focus {
+  border-color: #0f6a1d;
+  box-shadow: 0 0 0 3px rgba(15, 106, 29, 0.08);
+}
+
+/* Footer */
+.modal__footer--confirm-action {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 0 22px 22px;
+}

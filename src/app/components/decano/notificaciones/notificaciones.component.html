@@ -1,0 +1,172 @@
+<header class="page-header">
+  <h2>Centro de Notificaciones</h2>
+  <p>Registro de firmas pendientes, alertas urgentes y eventos principales del sistema.</p>
+</header>
+<div class="dashboard-container">
+
+  <!-- KPI ROW -->
+  <section class="kpi-grid">
+    <div class="kpi-card kpi-primary">
+      <div class="kpi-content">
+        <span class="kpi-label">Sin leer</span>
+        <span class="kpi-value">{{ stats().sinLeer }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-envelope-fill"></i></div>
+    </div>
+    <div class="kpi-card kpi-warning">
+      <div class="kpi-content">
+        <span class="kpi-label">Esta semana</span>
+        <span class="kpi-value">{{ paginacion().total }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-calendar-week"></i></div>
+    </div>
+    <div class="kpi-card kpi-danger">
+      <div class="kpi-content">
+        <span class="kpi-label">Total</span>
+        <span class="kpi-value">{{ stats().recibidas }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-inbox-fill"></i></div>
+    </div>
+    <div class="kpi-card kpi-success">
+      <div class="kpi-content">
+        <span class="kpi-label">Tasa de entrega</span>
+        <span class="kpi-value">{{ stats().tasa }}</span>
+      </div>
+      <div class="kpi-icon"><i class="bi bi-check-circle-fill"></i></div>
+    </div>
+  </section>
+
+  <!-- MAIN ROW -->
+  <section class="main-grid">
+
+    <!-- HISTORIAL -->
+    <div class="dash-panel">
+      <div class="panel-header">
+        <i class="bi bi-bell-fill"></i>
+        <h3 class="panel-title">Historial de notificaciones</h3>
+        <div class="search-wrap ms-auto">
+          <i class="bi bi-search"></i>
+          <input class="search-input" [ngModel]="buscar()" (ngModelChange)="buscar.set($event)" placeholder="Buscar..." />
+        </div>
+        <!-- PAGINACIÓN (mismo estilo toolbar que seguimiento) -->
+        <div class="d-flex align-items-center gap-2 ms-2 ps-3" style="border-left: 1px solid #e9ecef;">
+          <span style="font-size: 0.85rem; color: #6c757d; font-weight: 600; white-space: nowrap;">
+            Pág. {{ paginacion().actual }} de {{ paginacion().maxPagina }}
+          </span>
+          <div class="btn-group">
+            <button class="btn btn-outline-secondary btn-sm" (click)="cambiarPagina(-1)" [disabled]="paginacion().actual === 1">&laquo;</button>
+            <button class="btn btn-outline-secondary btn-sm" (click)="cambiarPagina(1)" [disabled]="paginacion().actual >= paginacion().maxPagina">&raquo;</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="session-list">
+        @if (cargando()) {
+          <app-loading message="Cargando notificaciones..."></app-loading>
+        }
+
+        @if (!cargando()) {
+          @for (n of paginacion().items; track n.id) {
+            <div class="session-item" (click)="abrirNotificacion(n)" style="cursor:pointer;">
+              <div class="notif-icon-wrap"
+                   [class.notif-icon--danger]="n.icono.includes('x-circle') || n.icono.includes('exclamation')"
+                   [class.notif-icon--info]="n.icono.includes('arrow-repeat') || n.icono.includes('bell')"
+                   [class.notif-icon--warning]="n.icono.includes('inbox')"
+                   [class.notif-icon--success]="n.icono.includes('check-circle')">
+                <i class="bi {{ n.icono }}"></i>
+              </div>
+              <div class="session-info">
+                <h4 class="session-title">{{ n.titulo }}</h4>
+                <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 8px;">{{ n.mensaje }}</div>
+                <div class="notif-actions">
+                  <button class="notif-btn notif-btn--primary" (click)="$event.stopPropagation(); abrirNotificacion(n)">
+                    <i class="bi bi-eye"></i> Ver solicitud
+                  </button>
+                </div>
+              </div>
+              <div class="session-time-label">{{ n.tiempo }}</div>
+            </div>
+          }
+
+          @if (paginacion().items.length === 0) {
+            <div style="text-align:center; padding: 40px; color: #6c757d;">
+              <i class="bi bi-bell-slash" style="font-size: 2rem; display: block; margin-bottom: 10px; color: #dee2e6;"></i>
+              No hay notificaciones.
+            </div>
+          }
+        }
+      </div><!-- /session-list -->
+    </div>
+
+
+
+    <!-- PREFERENCIAS -->
+    <div class="dash-panel">
+      <div class="panel-header">
+        <i class="bi bi-sliders"></i>
+        <h3 class="panel-title">Preferencias de recepción</h3>
+      </div>
+
+      <div class="session-list">
+        <label class="session-item pref-item">
+          <div class="notif-icon-wrap notif-icon--success"><i class="bi bi-whatsapp"></i></div>
+          <div class="session-info">
+            <h4 class="session-title" style="font-size: 0.88rem;">WhatsApp</h4>
+            <div style="font-size: 0.78rem; color: #6c757d;">Mensajes al número registrado</div>
+          </div>
+          <input type="checkbox" class="cfg-switch" [checked]="prefs().wa" (change)="prefs.set({...prefs(), wa: !prefs().wa})" />
+        </label>
+
+        <label class="session-item pref-item" style="border-bottom: none;">
+          <div class="notif-icon-wrap notif-icon--info"><i class="bi bi-envelope-fill"></i></div>
+          <div class="session-info">
+            <h4 class="session-title" style="font-size: 0.88rem;">Correo electrónico</h4>
+            <div style="font-size: 0.78rem; color: #6c757d;">Email a tu cuenta UTEQ</div>
+          </div>
+          <input type="checkbox" class="cfg-switch" [checked]="prefs().mail" (change)="prefs.set({...prefs(), mail: !prefs().mail})" />
+        </label>
+      </div>
+
+      <div class="pref-footer">
+        <button type="button" class="btn-outline-full" style="border-color:#dee2e6; color:#6c757d;" (click)="restablecerPrefs()">Restablecer</button>
+        <button type="button" class="btn-outline-full" (click)="guardarPrefs()">Guardar preferencias</button>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<!-- MODAL -->
+@if (showModal() && notificacionSeleccionada()) {
+  <div class="modal-overlay">
+    <div class="notif-modal-backdrop" (click)="cerrarModal()"></div>
+    <div class="dash-panel modal-dialog-panel" role="dialog">
+      <div class="panel-header">
+        <i class="bi bi-bell-fill"></i>
+        <h3 class="panel-title">Detalle de notificación</h3>
+        <button class="btn-ghost-icon ms-auto" type="button" (click)="cerrarModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      <div class="session-list">
+        <div class="session-item" style="cursor:default; pointer-events:none;">
+          <div class="notif-icon-wrap"><i class="bi {{ notificacionSeleccionada()!.icono }}"></i></div>
+          <div class="session-info">
+            <h4 class="session-title">{{ notificacionSeleccionada()!.titulo }}</h4>
+            <div style="font-size: 0.8rem; color: #6c757d; margin-bottom: 4px;">{{ notificacionSeleccionada()!.mensaje }}</div>
+            <span class="session-badge">{{ notificacionSeleccionada()!.tiempo }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="pref-footer">
+        <button class="btn-outline-full" style="border-color:#dee2e6; color:#6c757d;" type="button" (click)="marcarLeida(notificacionSeleccionada()!.id)">
+          <i class="bi bi-check2"></i> Marcar como leído
+        </button>
+        <button class="btn-outline-full" type="button" (click)="irAlTramite()">
+          <i class="bi bi-arrow-right"></i> Ir a la solicitud
+        </button>
+      </div>
+    </div>
+  </div>
+}
